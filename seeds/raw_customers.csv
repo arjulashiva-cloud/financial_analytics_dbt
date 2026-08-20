@@ -1,0 +1,11 @@
+customer_id,first_name,last_name,email,phone,customer_segment,acquisition_channel,state,zip_code,created_at,updated_at
+C001,James,Mitchell,james.mitchell@email.com,303-555-0101,RETAIL,DIGITAL,CO,80201,2022-03-15,2024-11-01
+C002,Sarah,Thompson,sarah.thompson@email.com,720-555-0102,PREMIUM,BRANCH,CO,80202,2021-07-22,2024-10-15
+C003,David,Williams,david.williams@email.com,303-555-0103,SMALL_BUSINESS,REFERRAL,CO,80203,2020-01-10,2024-09-30
+C004,Maria,Garcia,maria.garcia@email.com,720-555-0104,RETAIL,DIGITAL,CO,80204,2023-11-01,2024-12-01
+C005,Robert,Johnson,robert.johnson@email.com,303-555-0105,PREMIUM,DIRECT_MAIL,TX,78201,2019-06-30,2024-08-20
+C006,Jennifer,Brown,jennifer.brown@email.com,512-555-0106,RETAIL,PARTNER,TX,78202,2022-09-14,2024-11-10
+C007,Michael,Davis,michael.davis@email.com,303-555-0107,STUDENT,DIGITAL,CO,80205,2024-04-01,2024-12-01
+C008,Lisa,Martinez,lisa.martinez@email.com,720-555-0108,SMALL_BUSINESS,BRANCH,CO,80206,2021-03-18,2024-10-05
+C009,William,Anderson,william.anderson@email.com,303-555-0109,PREMIUM,REFERRAL,CO,80207,2020-11-25,2024-09-15
+C010,Patricia,Taylor,patricia.taylor@email.com,720-555-0110,RETAIL,DIGITAL,CO,80208,2023-06-10,2024-11-20
