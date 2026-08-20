@@ -1,0 +1,190 @@
+version: 2
+
+sources:
+  - name: raw_banking
+    description: >
+      Raw source data from the core banking system. Loaded daily via ELT pipeline
+      into Snowflake. Covers customers, accounts, transactions, loans, and credit cards.
+    database: FINANCIAL_ANALYTICS
+    schema: RAW
+    freshness:
+      warn_after: {count: 24, period: hour}
+      error_after: {count: 48, period: hour}
+
+    tables:
+      - name: customers
+        description: Master customer records from the CRM / core banking system.
+        loaded_at_field: updated_at
+        columns:
+          - name: customer_id
+            description: Unique customer identifier (primary key).
+            tests:
+              - unique
+              - not_null
+          - name: first_name
+            description: Customer first name.
+            tests:
+              - not_null
+          - name: last_name
+            description: Customer last name.
+            tests:
+              - not_null
+          - name: email
+            description: Customer email address.
+            tests:
+              - unique
+              - not_null
+          - name: customer_segment
+            description: Customer segment classification.
+            tests:
+              - accepted_values:
+                  values: ['RETAIL', 'SMALL_BUSINESS', 'PREMIUM', 'STUDENT']
+          - name: acquisition_channel
+            description: Channel through which the customer was acquired.
+            tests:
+              - accepted_values:
+                  values: ['DIGITAL', 'BRANCH', 'REFERRAL', 'DIRECT_MAIL', 'PARTNER']
+          - name: created_at
+            tests:
+              - not_null
+          - name: updated_at
+            tests:
+              - not_null
+
+      - name: accounts
+        description: All customer accounts including checking, savings, and investment.
+        loaded_at_field: updated_at
+        columns:
+          - name: account_id
+            description: Unique account identifier (primary key).
+            tests:
+              - unique
+              - not_null
+          - name: customer_id
+            description: Foreign key to customers table.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw_banking', 'customers')
+                  field: customer_id
+          - name: account_type
+            description: Type of account.
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['CHECKING', 'SAVINGS', 'MONEY_MARKET', 'CD', 'INVESTMENT']
+          - name: account_status
+            description: Current account status.
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['ACTIVE', 'CLOSED', 'FROZEN', 'PENDING']
+          - name: opened_date
+            tests:
+              - not_null
+          - name: balance
+            description: Current account balance in USD.
+            tests:
+              - not_null
+
+      - name: transactions
+        description: Daily transaction records across all account types.
+        loaded_at_field: transaction_date
+        columns:
+          - name: transaction_id
+            description: Unique transaction identifier (primary key).
+            tests:
+              - unique
+              - not_null
+          - name: account_id
+            description: Foreign key to accounts table.
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw_banking', 'accounts')
+                  field: account_id
+          - name: transaction_type
+            description: Type of transaction.
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['DEBIT', 'CREDIT', 'TRANSFER', 'FEE', 'INTEREST', 'REVERSAL']
+          - name: amount
+            description: Transaction amount in USD (positive = credit, negative = debit).
+            tests:
+              - not_null
+          - name: transaction_date
+            tests:
+              - not_null
+          - name: status
+            tests:
+              - accepted_values:
+                  values: ['POSTED', 'PENDING', 'REVERSED', 'FAILED']
+
+      - name: loans
+        description: Loan origination and servicing records.
+        loaded_at_field: updated_at
+        columns:
+          - name: loan_id
+            description: Unique loan identifier (primary key).
+            tests:
+              - unique
+              - not_null
+          - name: customer_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw_banking', 'customers')
+                  field: customer_id
+          - name: loan_type
+            tests:
+              - accepted_values:
+                  values: ['PERSONAL', 'AUTO', 'HOME_EQUITY', 'STUDENT', 'SMALL_BUSINESS']
+          - name: loan_status
+            tests:
+              - accepted_values:
+                  values: ['CURRENT', 'DELINQUENT_30', 'DELINQUENT_60', 'DELINQUENT_90', 'CHARGED_OFF', 'PAID_OFF']
+          - name: origination_date
+            tests:
+              - not_null
+          - name: principal_amount
+            tests:
+              - not_null
+          - name: outstanding_balance
+            tests:
+              - not_null
+          - name: interest_rate
+            tests:
+              - not_null
+
+      - name: credit_cards
+        description: Credit card account records including spend, payments, and utilization.
+        loaded_at_field: updated_at
+        columns:
+          - name: card_id
+            description: Unique card identifier (primary key).
+            tests:
+              - unique
+              - not_null
+          - name: customer_id
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw_banking', 'customers')
+                  field: customer_id
+          - name: card_status
+            tests:
+              - accepted_values:
+                  values: ['ACTIVE', 'CLOSED', 'SUSPENDED', 'PENDING_ACTIVATION']
+          - name: credit_limit
+            tests:
+              - not_null
+          - name: current_balance
+            tests:
+              - not_null
+          - name: minimum_payment_due
+            tests:
+              - not_null
+          - name: opened_date
+            tests:
+              - not_null
