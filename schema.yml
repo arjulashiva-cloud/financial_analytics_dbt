@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: mart_customer_360
+    description: >
+      Customer 360 golden record — one row per customer with full financial profile,
+      lifecycle stage, LTV tier, churn risk, and engagement score.
+      Primary mart for GTM, retention, and executive reporting.
+      Certified source of truth for all customer-level KPIs.
+    columns:
+      - name: customer_id
+        description: Unique customer identifier — primary key.
+        tests:
+          - unique
+          - not_null
+      - name: lifecycle_stage
+        description: Customer lifecycle classification based on activity and tenure.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['ONBOARDING', 'ACTIVE', 'LOYAL', 'AT_RISK', 'DORMANT']
+      - name: ltv_tier
+        description: LTV tier based on total relationship value.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['TIER_1_HIGH_VALUE', 'TIER_2_MID_VALUE', 'TIER_3_STANDARD', 'TIER_4_LOW_VALUE']
+      - name: churn_risk
+        description: Churn risk classification.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['HIGH', 'MEDIUM', 'LOW']
+      - name: engagement_score
+        description: Composite engagement score (0-100).
+        tests:
+          - not_null
+      - name: total_relationship_value
+        description: Sum of deposit balances, loan balances, and credit card balances.
+        tests:
+          - not_null
+      - name: product_depth
+        description: Number of distinct product types held (deposits, loans, cards). Range 0-3.
+        tests:
+          - not_null
+
+  - name: mart_acquisition_funnel
+    description: >
+      Customer acquisition funnel and retention cohort mart — monthly new customer
+      acquisition by channel and segment, activation rates, retention cohorts,
+      and churn analysis for GTM and marketing leadership reporting.
