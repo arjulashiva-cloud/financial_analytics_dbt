@@ -169,6 +169,6 @@ Certified KPI definitions, data quality scorecards, and STTM reconciliation chec
 
 ## Author
 
-**Shiva Arjula** — Senior Data Analyst / Analytics Engineer  
+**Shiva Krishna Arjula** — Senior Data Analyst / Analytics Engineer  
 Financial services analytics specialist: STTM, data governance, KPI frameworks, Snowflake, dbt, SQL  
 [linkedin.com/in/shivakrishnaarjula](https://www.linkedin.com/in/shivakrishnaarjula)
