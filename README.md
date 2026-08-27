@@ -12,6 +12,31 @@ Built to reflect real-world financial services analytics patterns — STTM docum
 
 ---
 
+## Tech Stack
+![dbt](https://img.shields.io/badge/dbt-FF694B?style=flat&logo=dbt&logoColor=white)
+![Snowflake](https://img.shields.io/badge/Snowflake-29B5E8?style=flat&logo=snowflake&logoColor=white)
+![Power BI](https://img.shields.io/badge/Power%20BI-F2C811?style=flat&logo=powerbi&logoColor=black)
+![SQL](https://img.shields.io/badge/SQL-4479A1?style=flat&logo=postgresql&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+
+> ✅ Pipeline: PASS=11 models · PASS=59 tests · WARN=0 · ERROR=0
+
+---
+
+## Power BI Dashboard
+4-page dashboard connected live to Snowflake via dbt mart tables.
+
+| Page | Coverage |
+|---|---|
+| Customer Overview | Churn risk, lifecycle, acquisition channel, relationship value |
+| Portfolio Performance | Balance, delinquency, utilization by product & segment |
+| Acquisition Funnel | New customers, activation rate, lifecycle by channel |
+| KPI Governance | Certified KPI catalog, DQ scorecards, STTM reconciliation |
+
+📊 [View screenshots →](./reports/)
+
+---
+
 ## Project Structure
 
 ```
