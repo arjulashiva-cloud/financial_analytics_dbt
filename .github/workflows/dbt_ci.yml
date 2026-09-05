@@ -33,32 +33,27 @@ jobs:
       - name: Create profiles.yml
         run: |
           mkdir -p ~/.dbt
-          python3 - <<'PYEOF'
-          import os, pathlib
-          content = "\n".join([
-            "financial_analytics_dbt:",
-            "  target: dev",
-            "  outputs:",
-            "    dev:",
-            "      type: snowflake",
-            "      account: \"" + os.environ["SNOWFLAKE_ACCOUNT"] + "\"",
-            "      user: \"" + os.environ["SNOWFLAKE_USER"] + "\"",
-            "      password: \"" + os.environ["SNOWFLAKE_PASSWORD"] + "\"",
-            "      database: FINANCIAL_ANALYTICS",
-            "      warehouse: \"" + os.environ["SNOWFLAKE_WAREHOUSE"] + "\"",
-            "      schema: STAGING",
-            "      role: \"" + os.environ["SNOWFLAKE_ROLE"] + "\"",
-            "      threads: 4",
-          ]) + "\n"
-          pathlib.Path.home().joinpath(".dbt", "profiles.yml").write_text(content)
-          print("profiles.yml written successfully")
-          PYEOF
-
-      - name: dbt debug (verify connection)
-        run: dbt debug
+          echo "financial_analytics_dbt:"           > ~/.dbt/profiles.yml
+          echo "  target: dev"                      >> ~/.dbt/profiles.yml
+          echo "  outputs:"                         >> ~/.dbt/profiles.yml
+          echo "    dev:"                           >> ~/.dbt/profiles.yml
+          echo "      type: snowflake"              >> ~/.dbt/profiles.yml
+          echo "      account: $SNOWFLAKE_ACCOUNT"  >> ~/.dbt/profiles.yml
+          echo "      user: $SNOWFLAKE_USER"        >> ~/.dbt/profiles.yml
+          echo "      password: $SNOWFLAKE_PASSWORD" >> ~/.dbt/profiles.yml
+          echo "      database: FINANCIAL_ANALYTICS" >> ~/.dbt/profiles.yml
+          echo "      warehouse: $SNOWFLAKE_WAREHOUSE" >> ~/.dbt/profiles.yml
+          echo "      schema: STAGING"              >> ~/.dbt/profiles.yml
+          echo "      role: $SNOWFLAKE_ROLE"        >> ~/.dbt/profiles.yml
+          echo "      threads: 4"                   >> ~/.dbt/profiles.yml
+          echo "profiles.yml created:"
+          cat ~/.dbt/profiles.yml
 
       - name: dbt deps
         run: dbt deps
 
-      - name: dbt compile (validate all models)
+      - name: dbt debug
+        run: dbt debug
+
+      - name: dbt compile
         run: dbt compile
