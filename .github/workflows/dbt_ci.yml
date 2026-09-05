@@ -30,8 +30,27 @@ jobs:
       - name: Install dbt-snowflake
         run: pip install dbt-snowflake==1.8.0
 
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << 'PROFILES_EOF'
+          financial_analytics_dbt:
+            target: dev
+            outputs:
+              dev:
+                type: snowflake
+                account: "${{ secrets.SNOWFLAKE_ACCOUNT }}"
+                user: "${{ secrets.SNOWFLAKE_USER }}"
+                password: "${{ secrets.SNOWFLAKE_PASSWORD }}"
+                database: FINANCIAL_ANALYTICS
+                warehouse: "${{ secrets.SNOWFLAKE_WAREHOUSE }}"
+                schema: STAGING
+                role: "${{ secrets.SNOWFLAKE_ROLE }}"
+                threads: 4
+          PROFILES_EOF
+
       - name: dbt deps
         run: dbt deps
 
       - name: dbt build (modified models + downstream)
-        run: dbt build --select state:modified+
+        run: dbt build --select state:modified+ --state ./target
