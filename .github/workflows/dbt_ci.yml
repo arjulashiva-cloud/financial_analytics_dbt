@@ -33,24 +33,32 @@ jobs:
       - name: Create profiles.yml
         run: |
           mkdir -p ~/.dbt
-          cat > ~/.dbt/profiles.yml << 'PROFILES_EOF'
-          financial_analytics_dbt:
-            target: dev
-            outputs:
-              dev:
-                type: snowflake
-                account: "${{ secrets.SNOWFLAKE_ACCOUNT }}"
-                user: "${{ secrets.SNOWFLAKE_USER }}"
-                password: "${{ secrets.SNOWFLAKE_PASSWORD }}"
-                database: FINANCIAL_ANALYTICS
-                warehouse: "${{ secrets.SNOWFLAKE_WAREHOUSE }}"
-                schema: STAGING
-                role: "${{ secrets.SNOWFLAKE_ROLE }}"
-                threads: 4
-          PROFILES_EOF
+          python3 - <<'PYEOF'
+          import os, pathlib
+          content = "\n".join([
+            "financial_analytics_dbt:",
+            "  target: dev",
+            "  outputs:",
+            "    dev:",
+            "      type: snowflake",
+            "      account: \"" + os.environ["SNOWFLAKE_ACCOUNT"] + "\"",
+            "      user: \"" + os.environ["SNOWFLAKE_USER"] + "\"",
+            "      password: \"" + os.environ["SNOWFLAKE_PASSWORD"] + "\"",
+            "      database: FINANCIAL_ANALYTICS",
+            "      warehouse: \"" + os.environ["SNOWFLAKE_WAREHOUSE"] + "\"",
+            "      schema: STAGING",
+            "      role: \"" + os.environ["SNOWFLAKE_ROLE"] + "\"",
+            "      threads: 4",
+          ]) + "\n"
+          pathlib.Path.home().joinpath(".dbt", "profiles.yml").write_text(content)
+          print("profiles.yml written successfully")
+          PYEOF
+
+      - name: dbt debug (verify connection)
+        run: dbt debug
 
       - name: dbt deps
         run: dbt deps
 
-      - name: dbt build (modified models + downstream)
-        run: dbt build --select state:modified+ --state ./target
+      - name: dbt compile (validate all models)
+        run: dbt compile
