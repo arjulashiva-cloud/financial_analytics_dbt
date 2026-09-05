@@ -1,0 +1,160 @@
+version: 2
+
+sources:
+  - name: raw
+    database: FINANCIAL_ANALYTICS
+    schema: RAW
+    description: "Raw tables loaded by Python generation scripts and API pulls"
+
+    tables:
+      - name: RAW_CUSTOMERS
+        description: "50,000 synthetic banking customers"
+        columns:
+          - name: CUSTOMER_ID
+            tests: [unique, not_null]
+          - name: CREDIT_SCORE
+            tests:
+              - not_null
+              - dbt_expectations.expect_column_values_to_be_between:
+                  arguments:
+                    min_value: 300
+                    max_value: 850
+          - name: INCOME_BAND
+            tests:
+              - accepted_values:
+                  values: ["<25K","25K-50K","50K-75K","75K-100K","100K-150K","150K-250K","250K+"]
+          - name: EMAIL
+            tests: [not_null]
+
+      - name: RAW_ACCOUNTS
+        description: "~120,000 bank accounts across 6 product types"
+        columns:
+          - name: ACCOUNT_ID
+            tests: [unique, not_null]
+          - name: CUSTOMER_ID
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'RAW_CUSTOMERS')
+                  field: CUSTOMER_ID
+          - name: ACCOUNT_TYPE
+            tests:
+              - accepted_values:
+                  values: [CHECKING, SAVINGS, MONEY_MARKET, CD, IRA_TRADITIONAL, IRA_ROTH]
+          - name: ACCOUNT_STATUS
+            tests:
+              - accepted_values:
+                  values: [ACTIVE, DORMANT, CLOSED]
+          - name: CURRENT_BALANCE
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  arguments:
+                    min_value: 0
+                    max_value: 2000000
+
+      - name: RAW_TRANSACTIONS
+        description: "~19.5M transactions over 12 months"
+        columns:
+          - name: TRANSACTION_ID
+            tests: [unique, not_null]
+          - name: ACCOUNT_ID
+            tests: [not_null]
+          - name: AMOUNT
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  arguments:
+                    min_value: 0.01
+                    max_value: 100000
+          - name: TRANSACTION_TYPE
+            tests:
+              - accepted_values:
+                  values: [DEBIT, CREDIT]
+
+      - name: RAW_LOANS
+        description: "~35,000 loans with CECL inputs"
+        columns:
+          - name: LOAN_ID
+            tests: [unique, not_null]
+          - name: CUSTOMER_ID
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'RAW_CUSTOMERS')
+                  field: CUSTOMER_ID
+          - name: LOAN_TYPE
+            tests:
+              - accepted_values:
+                  values: [AUTO, MORTGAGE, PERSONAL, HELOC]
+          - name: LOAN_STATUS
+            tests:
+              - accepted_values:
+                  values: [CURRENT, "30DPD", "60DPD", "90DPD", PAID_OFF, CHARGED_OFF]
+          - name: PROBABILITY_OF_DEFAULT
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  arguments:
+                    min_value: 0.001
+                    max_value: 0.95
+
+      - name: RAW_CREDIT_CARDS
+        description: "~28,000 credit card accounts"
+        columns:
+          - name: CARD_ID
+            tests: [unique, not_null]
+          - name: CUSTOMER_ID
+            tests:
+              - not_null
+              - relationships:
+                  to: source('raw', 'RAW_CUSTOMERS')
+                  field: CUSTOMER_ID
+          - name: CARD_PRODUCT
+            tests:
+              - accepted_values:
+                  values: [SECURED, CASH_BACK, TRAVEL_REWARDS, PREMIUM, STORE_BRANDED]
+          - name: CARD_STATUS
+            tests:
+              - accepted_values:
+                  values: [ACTIVE, SUSPENDED, CLOSED]
+          - name: UTILIZATION_RATE
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  arguments:
+                    min_value: 0
+                    max_value: 1
+
+      - name: RAW_FRED_MACRO
+        description: "FRED macroeconomic series — monthly (2019-present)"
+        columns:
+          - name: OBS_DATE
+            tests: [unique, not_null]
+          - name: MACRO_SCENARIO
+            tests:
+              - accepted_values:
+                  values: [base, adverse, severely_adverse]
+
+      - name: RAW_FDIC_PEERS
+        description: "Real FDIC BankFind peer bank data — active banks with $1B–$10B in assets"
+        columns:
+          - name: FDIC_CERT_ID
+            tests: [unique, not_null]
+          - name: BANK_NAME
+            tests: [not_null]
+          - name: TOTAL_ASSETS_MM
+            tests:
+              - dbt_expectations.expect_column_values_to_be_between:
+                  arguments:
+                    min_value: 1000
+                    max_value: 10000
+
+      - name: RAW_CFPB_COMPLAINTS
+        description: "CFPB consumer complaint database — banking products, last 2 years"
+        columns:
+          - name: COMPLAINT_ID
+            tests: [unique, not_null]
+          - name: DATE_RECEIVED
+            tests: [not_null]
+          - name: RESOLUTION_CATEGORY
+            tests:
+              - accepted_values:
+                  values: [MONETARY_RELIEF, NON_MONETARY_RELIEF, EXPLANATION_ONLY,
+                           CLOSED_NO_RELIEF, IN_PROGRESS, OTHER, UNKNOWN]

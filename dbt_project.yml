@@ -1,0 +1,67 @@
+name: "financial_analytics_dbt"
+version: "1.0.0"
+config-version: 2
+
+# Profile in ~/.dbt/profiles.yml
+profile: "financial_analytics_dbt"
+
+# ── Path config ───────────────────────────────────────────────────────────────
+model-paths:    ["models"]
+analysis-paths: ["analysis"]
+test-paths:     ["tests"]
+seed-paths:     ["seeds"]
+macro-paths:    ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path:   "target"
+clean-targets: ["target", "dbt_packages"]
+
+# ── Variable defaults ─────────────────────────────────────────────────────────
+vars:
+  # Macro-economic scenario for CECL stress testing
+  macro_scenario:   "base"   # base | adverse | severely_adverse
+  start_date:       "2020-01-01"
+  cecl_lgd_default: 0.45     # Loss Given Default assumption
+
+# ── Model materializations & schema routing ───────────────────────────────────
+models:
+  financial_analytics_dbt:
+
+    staging:
+      +materialized: view
+      +schema: STAGING
+
+    intermediate:
+      +materialized: view
+      +schema: INTERMEDIATE
+
+    marts:
+      +materialized: table
+
+      core:
+        +schema: MARTS_CORE
+
+      risk:
+        +schema: MARTS_RISK
+
+      finance:
+        +schema: MARTS_FINANCE
+
+      executive:
+        +schema: MARTS_EXECUTIVE
+
+# ── Snapshots ─────────────────────────────────────────────────────────────────
+snapshots:
+  financial_analytics_dbt:
+    +target_schema: SNAPSHOTS
+
+
+
+# ── Seeds ─────────────────────────────────────────────────────────────────────
+seeds:
+  financial_analytics_dbt:
+    +schema: SEEDS
+    ref_fred_macro:
+      +column_types:
+        observation_date: date
+        value:            float

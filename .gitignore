@@ -1,0 +1,27 @@
+# dbt artifacts
+target/
+dbt_packages/
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+.env
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Secrets — NEVER commit
+profiles.yml
+.env.*
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/settings.json
