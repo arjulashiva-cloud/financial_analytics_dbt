@@ -276,6 +276,4 @@ Senior Data Analyst — Financial Services Analytics
 10 years in banking data — Capital One, Genpact, Collabera  
 [linkedin.com/in/shivakrishnaarjula](https://linkedin.com/in/shivakrishnaarjula)
 
----
 
-> Built to demonstrate what a production banking analytics stack looks like when it's done right.
