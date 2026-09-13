@@ -13,7 +13,7 @@
 }}
 
 with fdic_peers as (
-    select * from {{ source('raw', 'RAW_FDIC_PEERS') }}
+    select * from {{ ref('raw_fdic_peers') }}
 ),
 
 -- ── Our Bank metrics (derived from staging models) ────────────────────────
@@ -50,22 +50,17 @@ our_bank as (
     select
         'OUR_BANK (Synthetic)'                                      as bank_name,
         'CO'                                                        as state,
-        -- Proxy total assets as loans + deposits (simplified)
         round((l.loan_balance + d.deposit_balance) / 1e6, 2)       as total_assets_mm,
         round(d.deposit_balance / 1e6, 2)                          as total_deposits_mm,
         round(l.loan_balance / 1e6, 2)                             as net_loans_mm,
-        -- NIM = (loan interest income + card interest income) / avg earning assets
         round(
             (l.loan_balance * l.avg_loan_rate / 100 + c.monthly_card_interest * 12)
             / nullif(l.loan_balance + d.deposit_balance, 0) * 100
         , 2)                                                        as net_interest_margin_pct,
-        -- Net charge-off rate
         round(l.charged_off_principal / nullif(l.total_originated, 0) * 100, 2)
                                                                     as net_chargeoff_rate_pct,
-        -- Loan-to-deposit ratio
         round(l.loan_balance / nullif(d.deposit_balance, 0) * 100, 2)
                                                                     as loan_to_deposit_ratio_pct,
-        -- ECL coverage (our bank only)
         round(l.ecl / nullif(l.ead, 0) * 100, 2)                   as ecl_coverage_pct,
         true                                                        as is_our_bank
     from our_loans l

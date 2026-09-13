@@ -24,33 +24,32 @@ FDIC_BASE = "https://banks.data.fdic.gov/api/institutions"
 SNOWFLAKE_CONFIG = {
     "account":   "dqmbxut-dk43290",
     "user":      "SHIVAARJULA6",
-    "password":  os.environ.get("SNOWFLAKE_PASSWORD", "Shiva@123"),
+    "password":  os.environ.get("SNOWFLAKE_PASSWORD"),
     "database":  "FINANCIAL_ANALYTICS",
     "schema":    "RAW",
     "warehouse": "COMPUTE_WH",
     "role":      "ACCOUNTADMIN",
 }
 
-# FDIC fields to retrieve
 FDIC_FIELDS = [
-    "REPDTE",       # Report date (YYYYMMDD)
-    "CERT",         # FDIC certificate number (unique bank ID)
-    "NAME",         # Institution name
-    "CITY",         # City
-    "STNAME",       # State name
-    "ASSET",        # Total assets ($thousands)
-    "DEP",          # Total deposits ($thousands)
-    "LNLSNET",      # Net loans and leases ($thousands)
-    "NETINC",       # Net income ($thousands)
-    "ROA",          # Return on assets (%)
-    "ROE",          # Return on equity (%)
-    "INTINC",       # Total interest income ($thousands)
-    "EINTEXP",      # Total interest expense ($thousands)
-    "NIITEPRE",     # Net interest margin (%)
-    "DRLNLS",       # Net charge-off rate (%)
-    "RBCT1J",       # Tier 1 capital ratio (%)
-    "LNLSDEPR",     # Loan-to-deposit ratio (%)
-    "REPNO",        # Employee count
+    "REPDTE",
+    "CERT",
+    "NAME",
+    "CITY",
+    "STNAME",
+    "ASSET",
+    "DEP",
+    "LNLSNET",
+    "NETINC",
+    "ROA",
+    "ROE",
+    "INTINC",
+    "EINTEXP",
+    "NIITEPRE",
+    "DRLNLS",
+    "RBCT1J",
+    "LNLSDEPR",
+    "REPNO",
 ]
 
 
@@ -60,7 +59,7 @@ def fetch_fdic_peers() -> pd.DataFrame:
 
     all_rows = []
     offset = 0
-    limit  = 500   # FDIC max per request
+    limit  = 500
 
     while True:
         params = {
@@ -118,13 +117,11 @@ def clean_fdic_data(df: pd.DataFrame) -> pd.DataFrame:
     }
     df = df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns})
 
-    # Coerce all numeric columns
     str_cols = {"bank_name", "city", "state", "report_date"}
     for col in df.columns:
         if col not in str_cols:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    # Convert $thousands → $millions for readability
     k_cols = ["total_assets_k", "total_deposits_k", "net_loans_k",
               "net_income_k", "interest_income_k", "interest_expense_k"]
     for col in k_cols:
@@ -144,35 +141,16 @@ def load_to_snowflake(df: pd.DataFrame):
     cur.execute("USE DATABASE FINANCIAL_ANALYTICS")
     cur.execute("USE SCHEMA RAW")
 
-    cur.execute("DROP TABLE IF EXISTS RAW_FDIC_PEERS")
-    cur.execute("""
-        CREATE TABLE RAW_FDIC_PEERS (
-            REPORT_DATE                 VARCHAR(10),
-            FDIC_CERT_ID                INTEGER,
-            BANK_NAME                   VARCHAR(200),
-            CITY                        VARCHAR(100),
-            STATE                       VARCHAR(50),
-            TOTAL_ASSETS_MM             FLOAT,
-            TOTAL_DEPOSITS_MM           FLOAT,
-            NET_LOANS_MM                FLOAT,
-            NET_INCOME_MM               FLOAT,
-            RETURN_ON_ASSETS_PCT        FLOAT,
-            RETURN_ON_EQUITY_PCT        FLOAT,
-            INTEREST_INCOME_MM          FLOAT,
-            INTEREST_EXPENSE_MM         FLOAT,
-            NET_INTEREST_MARGIN_PCT     FLOAT,
-            NET_CHARGEOFF_RATE_PCT      FLOAT,
-            TIER1_CAPITAL_RATIO_PCT     FLOAT,
-            LOAN_TO_DEPOSIT_RATIO_PCT   FLOAT,
-            EMPLOYEE_COUNT              FLOAT,
-            CREATED_AT                  TIMESTAMP_NTZ
-        )
-    """)
-
+    # Uppercase all column names to match Snowflake convention
     df.columns = [c.upper() for c in df.columns]
 
     print(f"Loading {len(df)} rows → RAW_FDIC_PEERS...")
-    _, _, nrows, _ = write_pandas(conn, df, "RAW_FDIC_PEERS")
+    success, nchunks, nrows, _ = write_pandas(
+        conn, df, "RAW_FDIC_PEERS",
+        auto_create_table=True,
+        overwrite=True,
+        quote_identifiers=False
+    )
     print(f"✅  Loaded {nrows} rows")
 
     cur.execute("""
