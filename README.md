@@ -7,7 +7,7 @@
 ![Power BI](https://img.shields.io/badge/Power_BI-Dashboard-F2C811?logo=powerbi&logoColor=black)
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
 ![CI](https://github.com/arjulashiva-cloud/financial_analytics_dbt/actions/workflows/dbt_ci.yml/badge.svg)
-
+![Dashboard Demo](Visualization/dashboard_demo.gif.gif)
 ---
 
 ## What This Solves
